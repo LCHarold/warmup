@@ -17,6 +17,7 @@ namespace warmup
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using System.Text;
     using settings;
 
     [DebuggerDisplay("{FullPath}")]
@@ -62,9 +63,21 @@ namespace warmup
                 if (new[] {"\\.git\\"}.Contains(info.FullName)) continue;
 
                 //process contents
-                string contents = File.ReadAllText(info.FullName);
-                contents = contents.Replace(_replacementToken, name);
-                File.WriteAllText(info.FullName, contents, Encoding.UTF8);
+                string source = File.ReadAllText(info.FullName);
+                string target = source.Replace(_replacementToken, name);
+                File.WriteAllText(info.FullName, target, Encoding.UTF8);
+
+                /*
+                 * This is for NuGet only. Really should be managed by a config setting.
+                 * 
+                 * Check if the file was changed.
+                 * If so, then append .pp to the file name
+                 * so it will be processed by NuGet.
+                 */
+                if (!source.Equals(target))
+                {
+                    File.Move(info.FullName, info.FullName + ".pp");
+                }
             }
         }
 
